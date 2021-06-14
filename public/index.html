@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
   <title>Twilio Server Starter Kit</title>
+  <script src="https://www.gstatic.com/firebasejs/4.8.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.8.0/firebase-messaging.js"></script>
+
 
   <link rel="stylesheet" crossorigin="anonymous"
     href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
@@ -54,6 +57,64 @@
     <a id="notifyDemoButton" class="btn btn-lg" href="/notify/">Notify</a>
     <a id="chatDemoButton" class="btn btn-lg" href="/chat/">Chat</a>
   </div>
+  <script>
+    // firebase sample code snippets from https://firebase.google.com/docs/cloud-messaging/js/client
+    // Initialize Firebase
+    var config = {
+      apiKey: 'AIzaSyAlabTmxaMo0v5jZat9M3bvzRHPpfQiSnU',
+      messagingSenderId: '77210339001'
+    };
+    firebase.initializeApp(config);
+
+    // Retrieve Firebase Messaging object.
+    const messaging = firebase.messaging();
+
+    messaging.requestPermission()
+            .then(function() {
+              console.log('Notification permission granted.');
+            })
+            .catch(function(err) {
+              console.log('Unable to get permission to notify.', err);
+            });
+
+    // Get Instance ID token. Initially this makes a network call, once retrieved
+    // subsequent calls to getToken will return from cache.
+    messaging.getToken()
+            .then(function(currentToken) {
+              if (currentToken) {
+                console.log('Token received: ', currentToken);
+                document.forms["binding_form"]["address_field"].value = currentToken;
+              } else {
+                var errMsg = 'No Instance ID token available. Request permission to generate one.';
+                alert(errMsg);
+                document.forms["binding_form"]["address_field"].value = errMsg;
+              }
+            })
+            .catch(function(err) {
+              console.log('An error occurred while retrieving token. ', err);
+            });
+
+    messaging.onMessage(function(payload) {
+      console.log('Message received. ', payload);
+      alert(payload.data.twi_body);
+    });
+
+    function createBinding(){
+      var identity = document.forms["binding_form"]["identity_field"].value;
+      if (identity == "") {
+        alert('Identity must be specified');
+        return false;
+      }
+
+      var address = document.forms["binding_form"]["address_field"].value;
+      if (address == "") {
+        alert('Address must be specified');
+        return false;
+      }
+
+      register(identity, address);
+    }
+  </script>
 
   <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
   <script crossorigin="anonymous"
